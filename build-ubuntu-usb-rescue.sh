@@ -133,7 +133,7 @@ echo ubuntu > "$MP/etc/kernel/entry-token"
 
 # --- 5. mmdebstrap ------------------------------------------------------------
 step "5. install Ubuntu $SUITE: ${PACKAGES[*]}"
-LC_ALL=C.UTF-8 mmdebstrap --mode=root --variant=minbase --skip=check/empty --include="${PACKAGES[*]}" \
+LC_ALL=C.UTF-8 mmdebstrap --verbose --mode=root --variant=minbase --skip=check/empty --include="${PACKAGES[*]}" \
     "$SUITE" "$MP" "$SOURCES/ubuntu.sources" "$SOURCES/gxr.sources"
 umount "$MP/var/cache/apt" "$MP/var/lib/apt/lists" "$MP/var/tmp"
 mount -t proc proc "$MP/proc"
