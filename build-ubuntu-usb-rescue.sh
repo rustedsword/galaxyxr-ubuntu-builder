@@ -17,7 +17,7 @@
 #   4. mount root
 #   5. install a minimal Ubuntu and the gxr packages with mmdebstrap
 #   6. set up a chroot
-#   7. set the hostname
+#   7. set the hostname and the locale
 #   8. configure kernel-install for XRBOOT
 #   9. install the Galaxy XR kernel, without linux-firmware
 #  10. set up the Wi-Fi access point on its own interface, wlan0 stays free for a client
@@ -172,11 +172,12 @@ for m in var/lib/apt/lists var/cache/apt var/tmp; do
 done
 chroot_run apt-get update
 
-# --- 7. hostname --------------------------------------------------------------
+# --- 7. hostname and locale ---------------------------------------------------
 # before the kernel: dracut copies it into the initramfs
-step "7. hostname $HOST_NAME"
+step "7. hostname $HOST_NAME, locale C.UTF-8"
 echo "$HOST_NAME" > "$MP/etc/hostname"
 printf '127.0.1.1\t%s\n' "$HOST_NAME" >> "$MP/etc/hosts"
+echo LANG=C.UTF-8 > "$MP/etc/default/locale"
 
 # --- 8. kernel-install --------------------------------------------------------
 step "8. kernel-install: XRBOOT on $XRBOOT_DEV, root=UUID=$root_uuid"
@@ -250,6 +251,8 @@ step "11. enable ssh at boot, disable networkd"
 chroot_run systemctl enable ssh.socket
 chroot_run systemctl disable systemd-networkd.service
 chroot_run systemctl is-enabled NetworkManager.service
+# the kernel has no audit support
+printf '[logging]\naudit=false\n' > "$MP/etc/NetworkManager/conf.d/no-audit.conf"
 
 # --- 12. user -----------------------------------------------------------------
 step "12. create user $USERNAME"
