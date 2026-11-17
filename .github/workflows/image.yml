@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-26.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install tools
         run: |
           sudo apt-get update
@@ -16,8 +16,7 @@ jobs:
           sudo modprobe f2fs
       - name: Build
         run: ./build-ubuntu-usb-rescue.sh ubuntu-usb-rescue.img
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
-          name: ubuntu-usb-rescue.img.xz
           path: ubuntu-usb-rescue.img.xz
-          compression-level: 0
+          archive: false
