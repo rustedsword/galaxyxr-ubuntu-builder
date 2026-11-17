@@ -43,9 +43,9 @@ SUITE=stonking
 UBUNTU_SOURCES=$(dirname "$(readlink -f "$0")")/sources/ubuntu.sources
 GXR_SOURCES=$(dirname "$(readlink -f "$0")")/sources/gxr.sources
 PACKAGES=(
-    systemd-sysv udev dbus systemd-resolved openssh-server sudo
-    iproute2 iputils-ping procps less vim-tiny ca-certificates netbase
-    network-manager network-manager-tui wpasupplicant dnsmasq-base nftables wireless-regdb iw
+    systemd-sysv udev dbus systemd-resolved systemd-timesyncd openssh-server sudo
+    iproute2 iputils-ping procps less vim-tiny ca-certificates netbase bash-completion
+    network-manager network-manager-tui wpasupplicant dnsmasq-base iptables wireless-regdb iw
     galaxyxr-firmware galaxyxr-initramfs-android-crap xrboot-kernel-install
 )
 HOST_NAME=gxr-usb
