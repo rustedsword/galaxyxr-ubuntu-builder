@@ -11,7 +11,7 @@
 #   1. create the image and partition it
 #   2. attach it to a loop device
 #   3. format XRBOOT and root
-#   4. mount root and XRBOOT, write the hostname and the kernel options
+#   4. mount root, XRBOOT and tmpfs for apt and dracut, write the hostname and the kernel options
 #   5. install a minimal Ubuntu, the Galaxy XR kernel and the rest with mmdebstrap
 #   6. check the boot entry on XRBOOT
 #   7. set the locale, add the hostname to /etc/hosts
@@ -109,10 +109,17 @@ root_uuid=$(blkid -p -s UUID -o value "$ROOT_DEV")
 [ -n "$root_uuid" ] || die "no filesystem UUID on $ROOT_DEV"
 
 # --- 4. mount and kernel options ----------------------------------------------
-# kernel-install reads all of this when mmdebstrap installs the kernel
 step "4. mount $ROOT_DEV on $MP and XRBOOT on $MP/boot/xrboot, hostname $HOST_NAME, root=UUID=$root_uuid"
 mount -t f2fs -o "$MOUNT_OPTS" "$ROOT_DEV" "$MP"
 findmnt -no OPTIONS "$MP"
+# apt's downloads, lists and caches and dracut's work dir don't fit on the image
+# next to the system; the image keeps the empty directories
+mkdir -p "$MP/var/cache/apt/archives" "$MP/var/lib/apt/lists"
+install -d -m 1777 "$MP/var/tmp"
+for m in var/cache/apt var/lib/apt/lists var/tmp; do
+    mount -t tmpfs tmpfs "$MP/$m"
+done
+# kernel-install reads the rest when mmdebstrap installs the kernel
 mkdir -p "$MP/boot/xrboot" "$MP/etc/kernel"
 mount -t vfat -o umask=0077 "$XRBOOT_DEV" "$MP/boot/xrboot"
 mkdir "$MP/boot/xrboot/loader"
@@ -128,6 +135,7 @@ echo ubuntu > "$MP/etc/kernel/entry-token"
 step "5. install Ubuntu $SUITE: ${PACKAGES[*]}"
 LC_ALL=C.UTF-8 mmdebstrap --mode=root --variant=minbase --skip=check/empty --include="${PACKAGES[*]}" \
     "$SUITE" "$MP" "$SOURCES/ubuntu.sources" "$SOURCES/gxr.sources"
+umount "$MP/var/cache/apt" "$MP/var/lib/apt/lists" "$MP/var/tmp"
 mount -t proc proc "$MP/proc"
 
 # --- 6. boot entry ------------------------------------------------------------
